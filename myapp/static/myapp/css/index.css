@@ -1,0 +1,20 @@
+/*body*/
+body {
+    height: 844px;
+    text-align: center;
+    padding-top: 400px;
+}
+
+/*.goto_login {
+    
+}
+.goto_signup {
+    
+} */
+input {
+    padding: 20px 60px;
+    margin: 4px;
+    font-size: large;
+   
+    
+} 
