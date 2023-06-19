@@ -1,1 +1,13 @@
-I
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <title>index</title>
+</head>
+<body>
+    <form class="login_view" action="{% url 'login_view' %}" method="post">
+        {% csrf_token %}
+        <input type="submit" value="ログイン">
+    </form>
+</body>
+</html>
