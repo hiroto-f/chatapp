@@ -1,4 +1,6 @@
-from django import forms
+from django.contrib.auth.forms import UserCreationForm
 
-class IndexForm(forms.Form):
-    
+
+class IndexForm(UserCreationForm):
+    class Meta:
+        fields = ['username','email','icon']
