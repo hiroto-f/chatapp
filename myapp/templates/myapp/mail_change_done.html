@@ -1,0 +1,14 @@
+{% extends "myapp/base.html" %}
+
+{% load static %}
+
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'myapp/css/mail_change_done.css' %}">
+{% endblock %}
+
+{% block header-title %}メールアドレス変更{% endblock %}
+
+{% block content %}
+<h1>メールアドレス変更が完了しました。
+</h1>
+{% endblock %}

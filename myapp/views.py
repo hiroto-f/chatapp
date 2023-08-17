@@ -1,9 +1,18 @@
-from django.shortcuts import redirect, render
-from django.contrib.auth.forms import UserCreationForm
-from django.views.generic import CreateView
+from django.shortcuts import redirect, render, get_object_or_404
+
+
 from django.urls import reverse_lazy
-from .forms import SignUpForm
-from django.contrib.auth import authenticate, get_user_model, login
+from .forms import SignUpForm, LoginForm, TalkForm, UserNameForm, MailChangeForm, IconChangeForm
+from django.contrib.auth import authenticate, get_user_model, login, logout
+
+from django.contrib.auth.views import LoginView, PasswordChangeView
+from .models import Talk
+from django.db.models import Q
+import operator
+from django.contrib.auth.decorators import login_required
+
+User = get_user_model()
+
 
 def index(request):
     return render(request, "myapp/index.html")
@@ -13,38 +22,17 @@ def signup_view(request):
         form = SignUpForm()
         error_message = ''
     elif request.method == "POST":
-        # 画像ファイルをformに入れた状態で使いたい時はformに"request.FILES"を加える。
-        # request.POST だけではNoneが入る。
         form = SignUpForm(request.POST, request.FILES)
         if form.is_valid():
-            # モデルフォームはformの値をmodelsにそのまま格納できるsave()メソッドがあるので便利。
             form.save()
-            # フォームから"username"を読み取る
             username = form.cleaned_data.get("username")
-            # フォームから"password1"を読み取る
             password = form.cleaned_data.get("password1")
-            # 認証情報のセットを検証するには authenticate() を利用してください。
-            # このメソッドは認証情報をキーワード引数として受け取ります。
-            # 検証する対象はデフォルトでは username と password であり
-            # その組み合わせを個々の 認証バックエンド に対して問い合わせ、認証バックエンドで認証情報が有効とされれば
-            # User オブジェクトを返します。もしいずれの認証バックエンドでも認証情報が有効と判定されなければ PermissionDenied が送出され、None が返されます。
-            # (公式ドキュメントより)
-            # つまり、autenticateメソッドは"username"と"password"を受け取り、その組み合わせが存在すれば
-            # そのUserを返し、不正であれば"None"を返します。
             user = authenticate(username=username, password=password)
             if user is not None:
-                # あるユーザーをログインさせる場合は、login() を利用してください。この関数は HttpRequest オブジェクトと User オブジェクトを受け取ります。
-                # ここでのUserは認証バックエンド属性を持ってる必要がある。
-                # authenticate()が返すUserはuser.backendを持つので連携可能。
                 login(request, user)
             return redirect("/")
-        # バリデーションが通らなかった時の処理を記述
-        else:
-            # エラー時 form.errors には エラー内容が格納されている
+        else:            
             print(form.errors)
-
-            
-
     context = {
         "form": form,
     }
@@ -52,14 +40,164 @@ def signup_view(request):
 
 
 
-def login_view(request):
-    return render(request, "myapp/login.html")
+class Login(LoginView):
+    form_class = LoginForm
+    template_name = "myapp/login.html"
+    
 
+@login_required
 def friends(request):
-    return render(request, "myapp/friends.html")
 
-def talk_room(request):
-    return render(request, "myapp/talk_room.html")
+    user = request.user
+    friends = User.objects.exclude(id=user.id)
+    
+    info = []
+    info_have = []
+    info_none = []
 
+    for friend in friends :
+        latest_info = Talk.objects.filter(
+                Q(talk_from=user,talk_to=friend)| Q(talk_from=friend,talk_to=user)
+            ).order_by('time').last()
+        if latest_info:
+            info_have.append([
+                friend,
+                latest_info.contents,
+                latest_info.time
+            ])
+        else:
+            info_none.append([
+                friend,None,None
+            ])
+    info_have=sorted(info_have,key=operator.itemgetter(2),reverse=True)
+
+    info.extend(info_have)
+    info.extend(info_none)
+
+    param = {
+        'info':info,
+    }
+    return render(request, 'myapp/friends.html', param)
+
+@login_required
+def talk_room(request, user_id):
+    user = request.user
+    friend = get_object_or_404(User, id=user_id)
+    talk = Talk.objects.filter(
+        Q(talk_from=user,talk_to=friend) |Q(talk_from=friend,talk_to=user)
+    ).order_by('time')
+
+    form = TalkForm()
+
+    contexts = {
+        'form':form,
+        'talk':talk,
+        'friend':friend,
+    }
+
+    if request.method == 'POST':
+        new_talk = Talk(talk_from=user,talk_to=friend)
+        form=TalkForm(request.POST,instance=new_talk)
+
+        if form.is_valid():
+            form.save()
+            return redirect('talk_room',user_id)
+        else:
+            print(form.errors)
+
+    return render(request, "myapp/talk_room.html", contexts)
+
+@login_required
 def setting(request):
-    return render(request, "myapp/setting.html")
+    
+    user = request.user
+    param = {
+        'user':user,
+    }
+    return render(request, "myapp/setting.html", param)
+
+@login_required
+def change_name(request, user_id):
+
+    user = User.objects.get(id=user_id)
+
+    if request.method == 'POST':
+        form = UserNameForm(request.POST, instance=user)
+
+        if form.is_valid():
+            form.save()
+            context = {
+                'form':form,
+                'user':user
+            }
+            return redirect('username_change_done')
+    else:
+        form=UserNameForm(instance=user)
+
+        context={
+            'form':form,
+            'user':user
+        }
+
+        return render(request, 'myapp/username_change.html', context)
+
+@login_required
+def username_change_done(request):
+    return render(request, 'myapp/username_change_done.html')
+      
+@login_required
+def mail_change(request,user_id):
+    user = User.objects.get(id=user_id)
+
+    if request.method =='POST':
+        form = MailChangeForm(request.POST, instance=user)
+
+        if form.is_valid():
+            form.save()
+            return redirect('mail_change_done')
+        
+    else:
+        form = MailChangeForm(instance=user)
+
+        param = {
+            'form':form,
+            'user':user,
+        }
+        return render(request, 'myapp/mail_change.html', param)
+
+@login_required
+def mail_change_done(request):
+    return render(request, 'myapp/mail_change_done.html')
+
+@login_required
+def icon_change(request, user_id):
+
+    user = User.objects.get(id=user_id)
+
+    if request.method == 'POST':
+        form = IconChangeForm(request.POST, request.FILES, instance=user)
+
+        if form.is_valid():
+            form.save()
+            return redirect('icon_change_done')
+        
+    else:
+        form = IconChangeForm(instance=user)
+        param={
+            'form':form,
+            'user':user,
+        }
+        return render(request, 'myapp/icon_change.html', param)
+    
+@login_required    
+def icon_change_done(request):
+    return render(request, 'myapp/icon_change_done.html')    
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('index')
+
+class Password_change(PasswordChangeView):
+    template_name = "myapp/password_change.html"
+    success_url = reverse_lazy('setting')

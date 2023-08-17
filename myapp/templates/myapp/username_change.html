@@ -1,0 +1,15 @@
+{% extends "myapp/base.html" %}
+{% load static %}
+
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'myapp/css/username_change.css' %}">
+{% endblock %}
+
+{% block header-title %}ユーザ名変更{% endblock %}
+
+{% block content %}
+<form action="{% url 'username_change' user.id %}" method="POST">{% csrf_token %}
+{{form}}
+<br><input type="submit" value="ユーザ名変更">
+</form>
+{% endblock %}

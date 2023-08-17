@@ -1,3 +1,19 @@
-from .form import IndexForm
+{% extends "myapp/base.html" %}
+{% load static %}
 
-{{ IndexForm().as_table }}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'myapp/css/login.css' %}">
+{% endblock %}
+
+{% block header_title %}ログイン{% endblock %}
+
+{% block content %}
+
+    <h1>ログイン</h1>
+    <form action="{% url 'login' %}" method="post">
+    {% csrf_token %}
+        {{ form.as_p }}
+        <p><input type="submit" value="ログイン"></p>
+    </form>
+
+{% endblock %}

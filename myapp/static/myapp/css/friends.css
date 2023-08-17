@@ -1,0 +1,56 @@
+.friends {
+    padding: 64px 0;
+}
+
+.friend-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    height: calc(100vh - 128px);
+}
+
+.friend-list__item {
+    width: calc(100% - 32px);
+    height: 4rem;
+    padding: 8px 16px;
+    border-bottom: solid 1px #888;
+    
+    
+}
+
+.friend-list__item:first-child {
+    border-top: solid 1px #888;
+}
+
+
+.friend-list__usericon {
+    position: absolute;
+    /* 縦横の長さを合わせる */
+    height: calc(4rem - 16px);
+    width: calc(4rem - 16px);
+    border: solid 3px #000;
+    border-radius: 100%;
+    float: left;
+    object-fit: cover;
+    z-index: -1;
+}
+/* z-indexは重なりの優先度を表す*/
+
+.friend-list__username {
+    font-size: 1.2rem;
+    width: calc(100% - 4rem - 8px);
+    margin: 0 0 0 auto;
+}
+
+.friend-list__talk {
+    font-size: 1.2rem;
+    width: calc(100% - 4rem - 8px);
+    margin: 0 0 0 auto;
+    
+}
+
+
+header {
+    position: fixed;
+    background-color: #eee;
+}

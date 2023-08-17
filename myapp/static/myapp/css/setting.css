@@ -1,0 +1,31 @@
+.choice-box {
+    
+    list-style: none;
+    width: 50%;
+    height: 50px;
+    border-radius: 10%;
+    border: solid 2px #888;
+}
+
+li {
+    position: relative;
+    display: block;
+    margin: auto;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.choices {
+    margin-top: 11px;
+}
+
+ul {
+    padding: 0;
+}
+
+a {
+    display: block;
+    font-size: 1.3rem ;
+    color: #888;
+    text-decoration: none;
+}
