@@ -10,7 +10,7 @@ class User(AbstractUser):
 
 class Talk(models.Model):
     
-    contents = models.CharField(max_length=200)
+    contents = models.CharField(max_length=200,verbose_name='')
     talk_from = models.ForeignKey(User, on_delete=models.CASCADE, related_name='talk_from')
     talk_to = models.ForeignKey(User, on_delete=models.CASCADE, related_name='talk_to')
     time = models.DateTimeField(auto_now_add=True)
@@ -22,4 +22,4 @@ class Talk(models.Model):
 
 #password:summerintern(統一)
 #superuser:hiroto
-#user:kage,abe(abehiroshi)
+#user:kage,abe
