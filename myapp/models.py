@@ -1,12 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 
-class User(AbstractUser):
-    icon = models.ImageField(
-        verbose_name="画像", upload_to="uploads", 
-        #img/uploads
-        default="images/noimage.png"
-    )
+User = get_user_model()
 
 class Talk(models.Model):
     

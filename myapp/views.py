@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 
 
 from django.urls import reverse_lazy
-from .forms import SignUpForm, LoginForm, TalkForm, UserNameForm, MailChangeForm, IconChangeForm
+from .forms import SignUpForm, LoginForm, UserNameForm, TalkForm,MailChangeForm, IconChangeForm
 from django.contrib.auth import authenticate, get_user_model, login, logout
 
 from django.contrib.auth.views import LoginView, PasswordChangeView
