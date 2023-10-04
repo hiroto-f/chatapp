@@ -13,8 +13,3 @@ class Talk(models.Model):
     def __str__(self):
         return self.talk_from
     
-
-
-#password:summerintern(統一)
-#superuser:admin
-#user:kage,abe
