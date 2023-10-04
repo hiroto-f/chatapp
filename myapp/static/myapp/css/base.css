@@ -33,6 +33,15 @@ body{
     color: #000;
 }
 
+.header_right {
+    position: absolute;
+    top: 24px;
+    right: 10px;
+    height: 1rem;
+    line-height: 1rem;
+    
+}
+
 /* フッター */
 .footer{
     width: 100vw;

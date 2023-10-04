@@ -16,5 +16,5 @@ class Talk(models.Model):
 
 
 #password:summerintern(統一)
-#superuser:hiroto
+#superuser:admin
 #user:kage,abe

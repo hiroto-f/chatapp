@@ -15,6 +15,6 @@ urlpatterns = [
     path('icon_change/<int:user_id>/',views.icon_change, name='icon_change'),
     path('icon_change_done/', views.icon_change_done, name='icon_change_done'),
     path('logout/', views.logout_view, name='logout'),
-    path('password_change/',views.Password_change.as_view(), name='password_change')
-
+    path('password_change/',views.Password_change.as_view(), name='password_change'),
+    path('find/',views.find, name='find'),
 ]

@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static 'myapp/css/friends.css' %}">
 {% endblock %}
 
-{% block header-title %}友達{% endblock %}
+{% block header-title %}検索結果{% endblock %}
 {% block header-right %}
 <form action="{% url 'find' %}" method="post">
     {% csrf_token %}
@@ -13,7 +13,6 @@
     <input type="submit" value="検索">
 </form>
 {% endblock %}
-
 {% block content %}
 <div class="friends">
     <ul class="friend-list">
@@ -35,6 +34,5 @@
 
     {% endfor %}
     </ul>
-    
 </div>
 {% endblock %}

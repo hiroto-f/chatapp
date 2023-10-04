@@ -4,7 +4,6 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     icon = models.ImageField(
-        verbose_name="画像", upload_to="uploads", 
-        #img/uploads
+        verbose_name="画像", upload_to="uploads", #img/uploads
         default="images/noimage.png"
     )

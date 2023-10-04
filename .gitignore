@@ -11,7 +11,7 @@ local_settings.py
 staticfiles/
 
 # データベース
-db.sqlite3
+db.postgresql_psypg2
 
 # macOS 固有のファイル
 .DS_Store

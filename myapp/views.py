@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render, get_object_or_404
 
 
 from django.urls import reverse_lazy
-from .forms import SignUpForm, LoginForm, UserNameForm, TalkForm,MailChangeForm, IconChangeForm
+from .forms import SignUpForm, LoginForm, UserNameForm, TalkForm,MailChangeForm, IconChangeForm, FindForm
 from django.contrib.auth import authenticate, get_user_model, login, logout
 
 from django.contrib.auth.views import LoginView, PasswordChangeView
@@ -47,7 +47,7 @@ class Login(LoginView):
 
 @login_required
 def friends(request):
-
+    form = FindForm()
     user = request.user
     friends = User.objects.exclude(id=user.id)
     
@@ -74,10 +74,11 @@ def friends(request):
     info.extend(info_have)
     info.extend(info_none)
 
-    param = {
+    params = {
         'info':info,
+        'form':form,
     }
-    return render(request, 'myapp/friends.html', param)
+    return render(request, 'myapp/friends.html', params)
 
 @login_required
 def talk_room(request, user_id):
@@ -201,3 +202,50 @@ def logout_view(request):
 class Password_change(PasswordChangeView):
     template_name = "myapp/password_change.html"
     success_url = reverse_lazy('setting')
+
+def find(request):
+    # if request.method == 'POST':
+    #     form = FindForm(request.POST)
+    #     find = request.POST['find']
+    #     data = User.objects.filter(username__contains=find)
+
+    # contexts = {
+    #     'form':form,
+    #     'data':data,
+    # }
+    # return render(request, 'myapp/find.html', contexts)
+
+    if request.method == 'POST':
+        user = request.user
+        form = FindForm(request.POST)
+        find = request.POST['find']
+        friends = User.objects.filter(username__icontains = find)
+
+        info = []
+        info_have = []
+        info_none = []
+
+        for friend in friends :
+            latest_info = Talk.objects.filter(
+                Q(talk_from=user,talk_to=friend)| Q(talk_from=friend,talk_to=user)
+            ).order_by('time').last()
+        if latest_info:
+            info_have.append([
+                friend,
+                latest_info.contents,
+                latest_info.time
+            ])
+        else:
+            info_none.append([
+                friend,None,None
+            ])
+    info_have=sorted(info_have,key=operator.itemgetter(2),reverse=True)
+
+    info.extend(info_have)
+    info.extend(info_none)
+
+    params = {
+        'info':info,
+        'form':form,
+    }
+    return render(request, 'myapp/find.html', params)
