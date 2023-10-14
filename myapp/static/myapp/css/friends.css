@@ -43,6 +43,7 @@
 }
 
 .friend-list__talk {
+    position: relative;
     font-size: 1.2rem;
     width: calc(100% - 4rem - 8px);
     margin: 0 0 0 auto;
@@ -53,4 +54,10 @@
 header {
     position: fixed;
     background-color: #eee;
+}
+
+.friend-list__time {
+    position:absolute;
+    right: 0;
+    bottom: 0;
 }

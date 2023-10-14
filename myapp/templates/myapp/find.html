@@ -16,23 +16,21 @@
 {% block content %}
 <div class="friends">
     <ul class="friend-list">
-    {% for friend, content, time in info %}
-    <a class="friend-list__link" href="{% url 'talk_room' friend.id %}">
+        {% for friend in friends %}
         <li class="friend-list__item">
-        <img class="friend-list__usericon" src="{{ friend.icon.url }}" alt="">
-        <div class="friend-list__username">
-        {{friend.username}}
-        </div>
-        {% if content %}
-        <div class="friend-list__talk">
-            {{ content }}||{{ time|date:'n/j H:i' }}
-        </div>
-        {% endif %}
-
+            <a class="friend-list__link" href="{% url 'talk_room' friend.id %}">
+                <img class="friend-list__usericon" src="{{ friend.icon.url }}">
+                <div class="friend-list__username">{{ friend.username }}</div>
+                {% if friend.latest_msg_talk %}
+                <div class="friend-list__talk">
+                    <p class="friend-list__content">{{ friend.latest_msg_talk|truncatechars:14 }}</p>
+                    <p class="friend-list__time">{{ friend.latest_msg_time|date:"n/j H:i" }}</p>
+                </div>
+                {% endif %}
+            </a>
         </li>
-    </a>
-
-    {% endfor %}
+        
+        {% endfor %}
     </ul>
 </div>
 {% endblock %}

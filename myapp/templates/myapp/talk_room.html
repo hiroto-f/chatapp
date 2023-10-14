@@ -19,7 +19,7 @@
     <ul class="chatboard" id="chatboard">
         
         {% for talk in talk %}
-            <li class="chatboard__content chatboard__content--{% if talk.talk_from == user %}user{% else %}friend{% endif %}">
+            <li class="chatboard__content ">
                 <p class="chatboard__name">＞{{ talk.talk_from }}</p>
                 <p class="chatboard__text">{{ talk.contents }}</p>
                 <p class="chatboard__time">{{ talk.time|date:"H:i" }}{{ talk.time|date:"(m/d)" }}</p>

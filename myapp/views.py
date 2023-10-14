@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render, get_object_or_404
-
+from django.db.models import Q, F, OuterRef, Subquery, Max, Case, When
 
 from django.urls import reverse_lazy
 from .forms import SignUpForm, LoginForm, UserNameForm, TalkForm,MailChangeForm, IconChangeForm, FindForm
@@ -49,33 +49,25 @@ class Login(LoginView):
 def friends(request):
     form = FindForm()
     user = request.user
-    friends = User.objects.exclude(id=user.id)
+    latest_msg = Talk.objects.filter(
+        Q(talk_from=OuterRef("pk"), talk_to=user)
+        | Q(talk_from=user, talk_to=OuterRef("pk"))
+    ).order_by("-time")
     
-    info = []
-    info_have = []
-    info_none = []
+    #OuterRef('pk')でannotateでフィールドを追加するレコードのpkを取ってきている
 
-    for friend in friends :
-        latest_info = Talk.objects.filter(
-                Q(talk_from=user,talk_to=friend)| Q(talk_from=friend,talk_to=user)
-            ).order_by('time').last()
-        if latest_info:
-            info_have.append([
-                friend,
-                latest_info.contents,
-                latest_info.time
-            ])
-        else:
-            info_none.append([
-                friend,None,None
-            ])
-    info_have=sorted(info_have,key=operator.itemgetter(2),reverse=True)
-
-    info.extend(info_have)
-    info.extend(info_none)
+    friends = (
+        User.objects.exclude(id=user.id)
+        .annotate(
+            latest_msg_talk=Subquery(latest_msg.values("contents")[:1]),
+            latest_msg_time=Subquery(latest_msg.values("time")[:1]),
+        )
+        .order_by(F("latest_msg_time").desc(nulls_last=True))
+    )
+    #Subquery(latest_msg.~)でlatest_magをサブクエリとして使用している
 
     params = {
-        'info':info,
+        'friends':friends,
         'form':form,
     }
     return render(request, 'myapp/friends.html', params)
@@ -84,9 +76,11 @@ def friends(request):
 def talk_room(request, user_id):
     user = request.user
     friend = get_object_or_404(User, id=user_id)
-    talk = Talk.objects.filter(
-        Q(talk_from=user,talk_to=friend) |Q(talk_from=friend,talk_to=user)
-    ).order_by('time')
+    talk = Talk.objects.select_related(
+        "talk_from", "talk_to"
+    ).filter(
+        Q(talk_from=user, talk_to=friend) | Q(talk_to=user, talk_from=friend)
+    ).order_by("time")
 
     form = TalkForm()
 
@@ -204,48 +198,33 @@ class Password_change(PasswordChangeView):
     success_url = reverse_lazy('setting')
 
 def find(request):
-    # if request.method == 'POST':
-    #     form = FindForm(request.POST)
-    #     find = request.POST['find']
-    #     data = User.objects.filter(username__contains=find)
-
-    # contexts = {
-    #     'form':form,
-    #     'data':data,
-    # }
-    # return render(request, 'myapp/find.html', contexts)
-
     if request.method == 'POST':
         user = request.user
         form = FindForm(request.POST)
         find = request.POST['find']
-        friends = User.objects.filter(username__icontains = find)
 
-        info = []
-        info_have = []
-        info_none = []
+        latest_msg = Talk.objects.filter(
+        Q(talk_from=OuterRef("pk"), talk_to=user)
+        | Q(talk_from=user, talk_to=OuterRef("pk"))
+        ).order_by("-time")
+        friends = (User.objects.filter(
+            Q(username__icontains = find)|
+            Q(email__icontains = find)
+            )
+            .annotate(
+            latest_msg_talk=Subquery(latest_msg.values("contents")[:1]),
+            latest_msg_time=Subquery(latest_msg.values("time")[:1]),    
+        ).order_by(F("latest_msg_time").desc(nulls_last=True))
+        )
 
-        for friend in friends :
-            latest_info = Talk.objects.filter(
-                Q(talk_from=user,talk_to=friend)| Q(talk_from=friend,talk_to=user)
-            ).order_by('time').last()
-        if latest_info:
-            info_have.append([
-                friend,
-                latest_info.contents,
-                latest_info.time
-            ])
-        else:
-            info_none.append([
-                friend,None,None
-            ])
-    info_have=sorted(info_have,key=operator.itemgetter(2),reverse=True)
-
-    info.extend(info_have)
-    info.extend(info_none)
-
+        
     params = {
-        'info':info,
+        'friends':friends,
         'form':form,
     }
     return render(request, 'myapp/find.html', params)
+
+
+# latest_info = Talk.objects.filter(
+#                 Q(talk_from=user,talk_to=friend)| Q(talk_from=friend,talk_to=user)
+#             ).order_by('time').last()
